@@ -1,6 +1,6 @@
 import unittest
 from textnode import TextNode, TextType
-from incline_markdown import split_nodes_delimiter,extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link
+from incline_markdown import split_nodes_delimiter,extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link, text_to_textnodes
 
 class TestSplitNodesDelimiter(unittest.TestCase):
     def test_split_bold(self):
@@ -89,3 +89,29 @@ class TestSplitNodesDelimiter(unittest.TestCase):
         ],
         new_nodes,
     )
+    
+    def test_text_to_textnodes(self):
+        text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+
+        result = text_to_textnodes(text)
+
+        expected = [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("text", TextType.BOLD_TEXT),
+            TextNode(" with an ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC_TEXT),
+            TextNode(" word and a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE_TEXT),
+            TextNode(" and an ", TextType.TEXT),
+            TextNode("obi wan image", TextType.IMAGES, "https://i.imgur.com/fJRm4Vk.jpeg"),
+            TextNode(" and a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+        ]
+
+        self.assertEqual(result, expected)
+
+    def test_plain_text_text_to_textnodes(self):
+        text = "This is plain text with no markdown"
+        result = text_to_textnodes(text)
+        expected = [TextNode("This is plain text with no markdown", TextType.TEXT)]
+        self.assertEqual(result, expected)
