@@ -30,3 +30,81 @@ def extract_markdown_images(text):
 def extract_markdown_links(text):
     matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
     return matches
+
+def split_nodes_image(old_nodes):
+    new_nodes = []
+
+    for node in old_nodes:
+        if node.text_type != TextType.TEXT:
+            new_nodes.append(node)
+            continue
+
+        images = extract_markdown_images(node.text)
+
+        if len(images) == 0:
+            new_nodes.append(node)
+            continue
+
+        current_text = node.text
+
+
+        for image_alt, image_url in images:
+            image_markdown = f"![{image_alt}]({image_url})"
+            split_node = current_text.split(image_markdown, 1)
+
+            if len(split_node) != 2:
+                raise Exception("Invalid markdown image syntax")
+
+            before_image = split_node[0]
+            after_image = split_node[1]
+
+            if before_image != "":
+                new_nodes.append(TextNode(before_image, TextType.TEXT))
+
+            new_nodes.append(TextNode(image_alt, TextType.IMAGES, image_url))
+
+            current_text = after_image
+
+        if current_text != "":
+            new_nodes.append(TextNode(current_text, TextType.TEXT))
+
+    return new_nodes
+
+def split_nodes_link(old_nodes):
+    new_nodes = []
+
+    for node in old_nodes:
+        if node.text_type != TextType.TEXT:
+            new_nodes.append(node)
+            continue
+
+        images = extract_markdown_links(node.text)
+
+        if len(images) == 0:
+            new_nodes.append(node)
+            continue
+
+        current_text = node.text
+
+
+        for image_alt, image_url in images:
+            image_markdown = f"[{image_alt}]({image_url})"
+            split_node = current_text.split(image_markdown, 1)
+
+            if len(split_node) != 2:
+                raise Exception("Invalid markdown image syntax")
+
+            before_image = split_node[0]
+            after_image = split_node[1]
+
+            if before_image != "":
+                new_nodes.append(TextNode(before_image, TextType.TEXT))
+
+            new_nodes.append(TextNode(image_alt, TextType.LINK, image_url))
+
+            current_text = after_image
+
+        if current_text != "":
+            new_nodes.append(TextNode(current_text, TextType.TEXT))
+
+    return new_nodes
