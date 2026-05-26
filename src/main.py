@@ -1,9 +1,9 @@
-from textnode import TextNode
-from textnode import TextType
+from textnode import TextNode, TextType
+from copystatic import copy_static
 
 def main():
-    cat = TextNode("red" , TextType.LINK, "https://www.boot.dev")
-    print(cat)
+    copy_static("static", "public")
+
     
 if __name__ == "__main__":
     main()
